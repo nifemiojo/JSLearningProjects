@@ -1,2 +1,2 @@
 # JSLearningProjects
-Projects to learn JS
+A collection of my frontend JS Projects
