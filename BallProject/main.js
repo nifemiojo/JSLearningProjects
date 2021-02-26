@@ -21,6 +21,77 @@ function GameObject(x, y, velX, velY) {
     this.exists = true;
 }
 
+
+function EvilBall() {
+  this.color = 'white';
+  this.size = 10;
+  let x = random(0 + this.size,width - this.size);
+  let y = random(0 + this.size,height - this.size);
+  
+  GameObject.call(this, x, y, 10, 10);
+  
+}
+
+EvilBall.prototype = Object.create(GameObject.prototype);
+EvilBall.prototype.constructor = EvilBall;
+
+EvilBall.prototype.draw = function() {
+  ctx.beginPath();
+  ctx.strokeStyle = this.color;
+  ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
+  ctx.lineWidth = 3;
+  ctx.stroke();
+}
+
+EvilBall.prototype.checkBounds = function() {
+  if ((this.x + this.size) >= width) {
+    this.x -= this.size;
+  }
+
+  if ((this.x - this.size) <= 0) {
+    this.x += this.size;
+  }
+
+  if ((this.y + this.size) >= height) {
+    this.y -= this.size;
+  }
+
+  if ((this.y - this.size) <= 0) {
+    this.y += this.size;
+  }
+}
+
+EvilBall.prototype.setControls = function() {
+
+  let _this = this;
+  window.onkeydown = function(e) {
+    if (e.key === 'h') {
+      _this.x -= _this.velX;
+    } else if (e.key === 'l') {
+      _this.x += _this.velX;
+    } else if (e.key === 'k') {
+      _this.y -= _this.velY;
+    } else if (e.key === 'j') {
+      _this.y += _this.velY;
+    }
+  }
+
+}
+
+EvilBall.prototype.collisionDetect = function() {
+  for (let j = 0; j < balls.length; j++) {
+    if (balls[j].exists) {
+      const dx = this.x - balls[j].x;
+      const dy = this.y - balls[j].y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      if (distance < this.size + balls[j].size) {
+        balls[j].exists = false;
+      }
+    }
+  }
+}
+
 function Ball( color, size,  ...args) {
     GameObject.apply(this, args);
     this.color = color;
@@ -72,6 +143,7 @@ function Ball( color, size,  ...args) {
     }
   }
 
+
 let balls = [];
 
 while (balls.length < 25) {
@@ -90,14 +162,22 @@ while (balls.length < 25) {
   balls.push(ball);
 }
 
+let evilBall = new EvilBall();
+evilBall.setControls();
+
 function loop() {
     ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
     ctx.fillRect(0, 0, width, height);
-  
+
     for (let i = 0; i < balls.length; i++) {
-      balls[i].draw();
-      balls[i].update();
-      balls[i].collisionDetect();
+      if (balls[i].exists) {
+        balls[i].draw();
+        balls[i].update();
+        balls[i].collisionDetect();
+      }
+      evilBall.draw();
+      evilBall.checkBounds();
+      evilBall.collisionDetect();
     }
   
     requestAnimationFrame(loop);
